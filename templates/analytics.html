@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold mb-4">Inventory Analytics</h2>
+
+  <!-- In Stock Products Chart -->
+  <div class="card mb-5">
+    <div class="card-header bg-success text-white">Products In Stock</div>
+    <div class="card-body">
+      <canvas id="inStockChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Most Consumed Products Chart -->
+  <div class="card mb-5">
+    <div class="card-header bg-primary text-white">Most Consumed Products</div>
+    <div class="card-body">
+      <form method="get" class="mb-3">
+        <select name="period" class="form-select w-auto d-inline-block">
+          <option value="daily" {% if period == 'daily' %}selected{% endif %}>Daily</option>
+          <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>Weekly</option>
+          <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>Monthly</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Show</button>
+      </form>
+      <canvas id="mostConsumedChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // In Stock Chart Data
+  const inStockLabels = [{% for product in in_stock_products %}'{{ product.name }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+  const inStockData = [{% for product in in_stock_products %} {{ product.currentStock }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  new Chart(document.getElementById('inStockChart'), {
+    type: 'bar',
+    data: {
+      labels: inStockLabels,
+      datasets: [{
+        label: 'Current Stock',
+        data: inStockData,
+        backgroundColor: 'rgba(40,167,69,0.6)'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Most Consumed Chart Data
+  const consumedLabels = [{% for item in most_consumed %}'{{ item.product__name }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+  const consumedData = [{% for item in most_consumed %}{{ item.total_quantity }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  new Chart(document.getElementById('mostConsumedChart'), {
+    type: 'bar',
+    data: {
+      labels: consumedLabels,
+      datasets: [{
+        label: 'Quantity Consumed',
+        data: consumedData,
+        backgroundColor: 'rgba(0,123,255,0.6)'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } }
+    }
+  });
+</script>
+{% endblock %}

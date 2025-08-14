@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<body class="bg-light">
+
+<div class="container py-5">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <h1 class="display-5 fw-bold text-primary">
+      <i class="bi bi-shop"></i> CAG Inventory Shop
+    </h1>
+    <p class="lead text-muted">Advanced Inventory Management System</p>
+  </div>
+
+  <!-- Dashboard Stats -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Total Products</h6>
+          <h3 class="fw-bold">{{ total_products }}</h3>
+          <small class="text-muted">Active inventory items</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Out of Stock</h6>
+          <h3 class="fw-bold text-danger">{{ out_of_stock_count }}</h3>
+          <small class="text-muted">Items need restocking</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Low Stock</h6>
+          <h3 class="fw-bold text-warning">{{ low_stock_count }}</h3>
+          <small class="text-muted">Items below minimum</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Total Value</h6>
+          <h3 class="fw-bold text-success">Tzs {{ total_value|floatformat:2 }}</h3>
+          <small class="text-muted">Current inventory value</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inventory Management -->
+  <div class="card shadow">
+    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+      <h4 class="mb-3 mb-md-0">Inventory Management</h4>
+      <form method="get" class="d-flex flex-column flex-sm-row gap-2">
+        <input type="text" name="search" value="{{ search_term }}" class="form-control" placeholder="Search products...">
+        <select name="category" class="form-select">
+          {% for category in categories %}
+            <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>
+              {{ category|title }}
+            </option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+      </form>
+    </div>
+
+    <div class="card-body">
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" id="inventoryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button" role="tab">Current Inventory</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="update-tab" data-bs-toggle="tab" data-bs-target="#update" type="button" role="tab">Update Stock</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab">Add Product</button>
+        </li>
+      </ul>
+
+      <div class="tab-content pt-4" id="inventoryTabsContent">
+        <!-- Inventory List -->
+        <div class="tab-pane fade show active" id="inventory" role="tabpanel">
+          {% include 'product_list.html' %}
+        </div>
+
+        
+        <div class="tab-pane fade" id="update" role="tabpanel">
+          {% include 'update_product_form.html' %}
+        </div>
+
+
+        <div class="tab-pane fade" id="add" role="tabpanel">
+            {% include 'add_product_form.html' %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.stock-update-form').forEach(function(form) {
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const productId = form.getAttribute('data-product-id');
+    const url = form.action;
+    const amount = form.querySelector('input[name="amount"]').value;
+    // Find which button was clicked
+    let type = 'add';
+    if (window.event && window.event.submitter) {
+      type = window.event.submitter.value;
+    }
+    const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Accept': 'application/json',
+      },
+      body: new URLSearchParams({
+        amount: amount,
+        type: type,
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('current-stock-' + productId).textContent = data.currentStock;
+      } else {
+        alert(data.error || 'Update failed');
+      }
+    });
+  });
+});
+
+document.getElementById('add-product-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const url = form.action;
+  const formData = new FormData(form);
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': form.querySelector('input[name="csrfmiddlewaretoken"]').value,
+      'Accept': 'application/json',
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Optionally clear the form
+      form.reset();
+      // Optionally show a success message
+      alert('Product added!');
+      // Optionally update the product list (reload or use AJAX to fetch and update)
+      location.reload(); // simplest way to update the dashboard
+    } else {
+      alert(data.error || 'Failed to add product');
+    }
+  });
+});
+</script>
+</body>
+{% endblock %}
+
+

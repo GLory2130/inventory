@@ -1,0 +1,90 @@
+<form id="add-product-form" method="post" action="{% url 'add_product_form' %}" class="card shadow-lg p-4 mx-auto" style="max-width: 720px;">
+  {% csrf_token %}
+  <h2 class="h4 mb-4 text-primary d-flex align-items-center gap-2">
+    <i class="bi bi-box-seam"></i> Add New Product
+  </h2>
+
+  <div class="row g-3">
+    <!-- Product Name -->
+    <div class="col-md-6">
+      <label for="name" class="form-label">Product Name *</label>
+      <input type="text" name="name" id="name" class="form-control {% if errors.name %}is-invalid{% endif %}" placeholder="Enter product name" value="{{ form.name.value|default_if_none:'' }}">
+      {% if errors.name %}<div class="invalid-feedback">{{ errors.name }}</div>{% endif %}
+    </div>
+
+    <!-- Category -->
+    <div class="col-md-6">
+      <label for="category" class="form-label">Category *</label>
+      <input type="text" name="category" id="category" class="form-control {% if errors.category %}is-invalid{% endif %}" placeholder="Enter or select category" list="categories" value="{{ form.category.value|default_if_none:'' }}">
+      <datalist id="categories">
+        {% for cat in common_categories %}
+          <option value="{{ cat }}"></option>
+        {% endfor %}
+      </datalist>
+      {% if errors.category %}<div class="invalid-feedback">{{ errors.category }}</div>{% endif %}
+    </div>
+
+    <!-- Supplier -->
+    <div class="col-md-6">
+      <label for="supplier" class="form-label">Supplier *</label>
+      <input type="text" name="supplier" id="supplier" class="form-control {% if errors.supplier %}is-invalid{% endif %}" placeholder="Enter supplier name" value="{{ form.supplier.value|default_if_none:'' }}">
+      {% if errors.supplier %}<div class="invalid-feedback">{{ errors.supplier }}</div>{% endif %}
+    </div>
+
+    <!-- Price -->
+    <div class="col-md-6">
+      <label for="price" class="form-label">Price (Tzs) *</label>
+      <input type="number" name="price" id="price" step="0.01" min="0" class="form-control {% if errors.price %}is-invalid{% endif %}" value="{{ form.price.value|default_if_none:'' }}">
+      {% if errors.price %}<div class="invalid-feedback">{{ errors.price }}</div>{% endif %}
+    </div>
+
+    <!-- Current Stock -->
+    <div class="col-md-6">
+      <label for="currentStock" class="form-label">Current Stock</label>
+      <input type="number" name="currentStock" id="currentStock" min="0" class="form-control {% if errors.currentStock %}is-invalid{% endif %}" value="{{ form.currentStock.value|default_if_none:'' }}">
+      {% if errors.currentStock %}<div class="invalid-feedback">{{ errors.currentStock }}</div>{% endif %}
+    </div>
+
+    <!-- Min Stock -->
+    <div class="col-md-6">
+      <label for="minStock" class="form-label">Minimum Stock *</label>
+      <input type="number" name="minStock" id="minStock" min="0" class="form-control {% if errors.minStock %}is-invalid{% endif %}" value="{{ form.minStock.value|default_if_none:'' }}">
+      {% if errors.minStock %}<div class="invalid-feedback">{{ errors.minStock }}</div>{% endif %}
+    </div>
+
+    <!-- Max Stock -->
+    <div class="col-md-6">
+      <label for="maxStock" class="form-label">Maximum Stock *</label>
+      <input type="number" name="maxStock" id="maxStock" min="1" class="form-control {% if errors.maxStock %}is-invalid{% endif %}" value="{{ form.maxStock.value|default_if_none:'' }}">
+      {% if errors.maxStock %}<div class="invalid-feedback">{{ errors.maxStock }}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Description -->
+  <div class="mt-4">
+    <label for="description" class="form-label">Description (Optional)</label>
+    <textarea name="description" id="description" rows="3" class="form-control">{{ form.description.value|default_if_none:'' }}</textarea>
+  </div>
+
+  <!-- Stock Level Preview -->
+  {% if form.maxStock.value %}
+    {% with current=form.currentStock.value|default_if_none:0 max=form.maxStock.value min=form.minStock.value|default_if_none:0 %}
+    <div class="bg-light p-3 mt-4 rounded">
+      <h5 class="mb-2">Stock Level Preview</h5>
+      <div class="d-flex justify-content-between small text-muted">
+        <span>Current: {{ current }}</span>
+        <span>Min: {{ min }}</span>
+        <span>Max: {{ max }}</span>
+      </div>
+      <!--  -->
+    </div>
+    {% endwith %}
+  {% endif %}
+
+  <!-- Submit Button -->
+  <div class="mt-4">
+    <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+      <i class="bi bi-plus-circle"></i> Add Product to Inventory
+    </button>
+  </div>
+</form>

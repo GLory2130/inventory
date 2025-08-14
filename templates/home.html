@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="bg-primary bg-gradient text-white py-5">
+  <div class="container text-center">
+    <h1 class="display-4 fw-bold mb-3">
+      Master Your Inventory with <span class="text-warning">CAG Inventory Shop</span>
+    </h1>
+    <p class="lead mb-4">
+      The most advanced inventory management system designed to streamline your business operations,
+      reduce costs, and boost efficiency with real-time tracking and intelligent analytics.
+    </p>
+    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5">Get Started</a>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 ">
+  <div >
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Why Choose CAG Inventory Shop?</h2>
+      <p class="text-muted">Built for modern businesses that demand efficiency, accuracy, and growth.</p>
+    </div>
+    <div class="row g-4">
+      {% for feature in features %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+              <i class="bi bi-{{ feature.icon }} text-primary fs-4"></i>
+            </div>
+            <h5 class="card-title">{{ feature.title }}</h5>
+            <p class="card-text text-muted">{{ feature.description }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 ">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Trusted by Businesses Worldwide</h2>
+    </div>
+    <div class="row text-center g-4">
+      <div class="col-md-3">
+        <h3 class="text-primary fw-bold">10,000+</h3>
+        <p class="text-muted">Active Users</p>
+      </div>
+      <div class="col-md-3">
+        <h3 class="text-primary fw-bold">50M+</h3>
+        <p class="text-muted">Products Tracked</p>
+      </div>
+      <div class="col-md-3">
+        <h3 class="text-primary fw-bold">99.9%</h3>
+        <p class="text-muted">Uptime</p>
+      </div>
+      <div class="col-md-3">
+        <h3 class="text-primary fw-bold">24/7</h3>
+        <p class="text-muted">Support</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white text-center">
+  <div class="container">
+    <h2 class="fw-bold mb-3">Ready to Transform Your Inventory Management?</h2>
+    <p class="lead mb-4">Join thousands of businesses that have streamlined their operations with Stock Savvy Shop.</p>
+    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5">Start Your Inventory</a>
+  </div>
+</section>
+{% endblock %}

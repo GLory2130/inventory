@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container py-5">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <h1 class="display-5 fw-bold text-primary">Product Management</h1>
+    <p class="lead text-muted">Manage your inventory products efficiently</p>
+  </div>
+
+  <!-- Product Management Card -->
+  <div class="card shadow">
+    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+      <h4 class="mb-3 mb-md-0">Products Catalog</h4>
+      <form method="get" class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+        <input type="text" name="search" value="{{ search_term }}" class="form-control" placeholder="Search products...">
+        <select name="category" class="form-select">
+          {% for category in categories %}
+            <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>
+              {{ category|title }}
+            </option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+      </form>
+    </div>
+
+    <div class="card-body">
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" id="productTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="update-tab" data-bs-toggle="tab" data-bs-target="#update" type="button" role="tab">Update Product</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab">Add New Product</button>
+        </li>
+      </ul>
+
+      <div class="tab-content pt-4" id="productTabsContent">
+        <!-- Product List -->
+        <div class="tab-pane fade show active" id="update" role="tabpanel">
+          {% include 'product_list.html' %}
+        </div>
+            
+        </div>
+
+        <!-- Add Product Form -->
+        <div class="tab-pane fade" id="add" role="tabpanel">
+  {% include 'add_product_form.html' %}
+</div>
+
+      </div>
+
+      <!-- Filtered Product Table -->
+      <div class="mt-5">
+        {% if products %}
+          <ul>
+            {% for product in products %}
+              <li>{{ product.name }} ({{ product.category }})</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No products found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+}

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+  <div class="card shadow-lg w-100" style="max-width: 480px;">
+    <div class="card-body p-4">
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <i class="bi bi-shop text-primary fs-1"></i>
+        <h4 class="fw-bold mt-2">Create Your Account</h4>
+        <p class="text-muted">Join Stock Savvy and streamline your inventory</p>
+      </div>
+
+      <!-- Registration Form -->
+      <form method="POST" action="{% url 'register' %}">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="first_name" class="form-label">First Name</label>
+            <input type="text" name="first_name" id="first_name" class="form-control" placeholder="John" required>
+          </div>
+          <div class="col-md-6">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input type="text" name="last_name" id="last_name" class="form-control" placeholder="Doe" required>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label for="email" class="form-label">Email Address</label>
+          <input type="email" name="email" id="email" class="form-control" placeholder="john@company.com" required>
+        </div>
+
+        <div class="mt-3">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <input type="password" name="password" id="password" class="form-control" placeholder="Create a strong password" required>
+            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password', 'toggleIcon1')">
+              <i class="bi bi-eye" id="toggleIcon1"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label for="confirm_password" class="form-label">Confirm Password</label>
+          <div class="input-group">
+            <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Confirm your password" required>
+            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirm_password', 'toggleIcon2')">
+              <i class="bi bi-eye" id="toggleIcon2"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-check mt-3">
+          <input class="form-check-input" type="checkbox" id="terms" required>
+          <label class="form-check-label" for="terms">
+            I agree to the <a href="terms.html" class="text-decoration-none text-primary">Terms of Service</a> and
+            <a href="privacy.html" class="text-decoration-none text-primary">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-4">Create Account</button>
+      </form>
+
+      <!-- Message Display -->
+      {% if message %}
+        <div class="mt-3 text-center text-{{ message_type }}">
+          {{ message }}
+        </div>
+      {% endif %}
+
+      <!-- Sign In Link -->
+      <div class="text-center mt-4">
+        <p class="text-muted">Already have an account?
+          <a href="{% url 'login' %}" class="text-primary fw-medium text-decoration-none">Sign in here</a>
+        </p>
+      </div>
+
+      <!-- Divider -->
+      <div class="text-center my-3">
+        <span class="text-muted">Or continue with</span>
+      </div>
+
+      <!-- Social Buttons -->
+      <div class="d-grid gap-2">
+        <button type="button" class="btn btn-outline-secondary">
+          <i class="bi bi-google me-2"></i> Google
+        </button>
+        <button type="button" class="btn btn-outline-secondary">
+          <i class="bi bi-facebook me-2"></i> Facebook
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === "password") {
+      input.type = "text";
+      icon.classList.replace("bi-eye", "bi-eye-slash");
+    } else {
+      input.type = "password";
+      icon.classList.replace("bi-eye-slash", "bi-eye");
+    }
+  }
+</script>
+{% endblock %}

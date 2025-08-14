@@ -1,0 +1,46 @@
+<form id="update-product-form" method="post" action="{% url 'update_product' %}" class="card shadow-lg p-4 mx-auto" style="max-width: 720px;">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label for="product_id" class="form-label">Select Product to Update</label>
+    <select name="product_id" id="product_id" class="form-select" required>
+      <option value="">Choose...</option>
+      {% for product in products %}
+        <option value="{{ product.id }}">{{ product.name }} ({{ product.category }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div id="update-fields" style="display:none;">
+    <div class="mb-3">
+      <label for="price" class="form-label">Price</label>
+      <input type="number" name="price" id="price" class="form-control" step="0.01" min="0">
+    </div>
+    <div class="mb-3">
+      <label for="currentStock" class="form-label">Current Stock</label>
+      <input type="number" name="currentStock" id="currentStock" class="form-control" min="0">
+    </div>
+    <div class="mb-3">
+      <label for="minStock" class="form-label">Minimum Stock</label>
+      <input type="number" name="minStock" id="minStock" class="form-control" min="0">
+    </div>
+    <div class="mb-3">
+      <label for="maxStock" class="form-label">Maximum Stock</label>
+      <input type="number" name="maxStock" id="maxStock" class="form-control" min="1">
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea name="description" id="description" class="form-control" rows="2"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Update Product</button>
+  </div>
+</form>
+
+<script>
+document.getElementById('product_id').addEventListener('change', function() {
+  if (this.value) {
+    document.getElementById('update-fields').style.display = 'block';
+    // Optionally, fetch product details via AJAX and fill the fields
+  } else {
+    document.getElementById('update-fields').style.display = 'none';
+  }
+});
+</script>
