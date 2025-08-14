@@ -245,6 +245,32 @@ def most_consumed_products_view(request):
 
     return render(request, 'analytics.html', {'consumptions': consumptions, 'period': period})
 
+def analytics_view(request):
+    """Main analytics page that displays overview of inventory analytics"""
+    products = Product.objects.all()
+    
+    # Get products in stock
+    in_stock_products = products.filter(currentStock__gt=0)
+    
+    # Get most consumed products (last 30 days)
+    now = timezone.now()
+    since = now - timedelta(days=30)
+    
+    most_consumed = (
+        ProductConsumption.objects
+        .filter(consumed_at__gte=since)
+        .values('product__id', 'product__name')
+        .annotate(total_quantity=Sum('quantity'))
+        .order_by('-total_quantity')[:10]
+    )
+    
+    context = {
+        'products': products,
+        'in_stock_products': in_stock_products,
+        'most_consumed': most_consumed,
+    }
+    return render(request, 'analytics.html', context)
+
 def some_view(request):
     # Some logic here
     return redirect('index')  # This will redirect to the index view

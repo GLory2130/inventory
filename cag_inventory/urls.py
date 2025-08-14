@@ -18,6 +18,7 @@ urlpatterns = [
     path('in-stock/', products_in_stock_view, name='products-in-stock'),
     path('analytics/sales/', sales_analytics_view, name='sales-analytics'),
     path('analytics/most-consumed/', most_consumed_products_view, name='most-consumed-products'),
+    path('analytics/', views.analytics_view, name='analytics'),
     path('products/<int:pk>/delete/', views.product_delete_view, name='delete_product'),
 
 ]
