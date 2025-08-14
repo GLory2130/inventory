@@ -1,62 +1,73 @@
+{% load static %}
 <form id="add-product-form" method="post" action="{% url 'add_product_form' %}" class="card shadow-lg p-4 mx-auto" style="max-width: 720px;">
   {% csrf_token %}
   <h2 class="h4 mb-4 text-primary d-flex align-items-center gap-2">
     <i class="bi bi-box-seam"></i> Add New Product
   </h2>
 
+  <div id="form-messages" class="alert alert-danger d-none" role="alert"></div>
+  <div id="form-success" class="alert alert-success d-none" role="alert"></div>
+
   <div class="row g-3">
     <!-- Product Name -->
     <div class="col-md-6">
       <label for="name" class="form-label">Product Name *</label>
-      <input type="text" name="name" id="name" class="form-control {% if errors.name %}is-invalid{% endif %}" placeholder="Enter product name" value="{{ form.name.value|default_if_none:'' }}">
+      <input type="text" name="name" id="name" class="form-control {% if errors.name %}is-invalid{% endif %}" placeholder="Enter product name" value="{{ form.name.value|default_if_none:'' }}" required>
       {% if errors.name %}<div class="invalid-feedback">{{ errors.name }}</div>{% endif %}
+      <div class="invalid-feedback" id="error-name"></div>
     </div>
 
     <!-- Category -->
     <div class="col-md-6">
       <label for="category" class="form-label">Category *</label>
-      <input type="text" name="category" id="category" class="form-control {% if errors.category %}is-invalid{% endif %}" placeholder="Enter or select category" list="categories" value="{{ form.category.value|default_if_none:'' }}">
+      <input type="text" name="category" id="category" class="form-control {% if errors.category %}is-invalid{% endif %}" placeholder="Enter or select category" list="categories" value="{{ form.category.value|default_if_none:'' }}" required>
       <datalist id="categories">
         {% for cat in common_categories %}
           <option value="{{ cat }}"></option>
         {% endfor %}
       </datalist>
       {% if errors.category %}<div class="invalid-feedback">{{ errors.category }}</div>{% endif %}
+      <div class="invalid-feedback" id="error-category"></div>
     </div>
 
     <!-- Supplier -->
     <div class="col-md-6">
       <label for="supplier" class="form-label">Supplier *</label>
-      <input type="text" name="supplier" id="supplier" class="form-control {% if errors.supplier %}is-invalid{% endif %}" placeholder="Enter supplier name" value="{{ form.supplier.value|default_if_none:'' }}">
+      <input type="text" name="supplier" id="supplier" class="form-control {% if errors.supplier %}is-invalid{% endif %}" placeholder="Enter supplier name" value="{{ form.supplier.value|default_if_none:'' }}" required>
       {% if errors.supplier %}<div class="invalid-feedback">{{ errors.supplier }}</div>{% endif %}
+      <div class="invalid-feedback" id="error-supplier"></div>
     </div>
 
     <!-- Price -->
     <div class="col-md-6">
       <label for="price" class="form-label">Price (Tzs) *</label>
-      <input type="number" name="price" id="price" step="0.01" min="0" class="form-control {% if errors.price %}is-invalid{% endif %}" value="{{ form.price.value|default_if_none:'' }}">
+      <input type="number" name="price" id="price" step="0.01" min="0" class="form-control {% if errors.price %}is-invalid{% endif %}" value="{{ form.price.value|default_if_none:'' }}" required>
       {% if errors.price %}<div class="invalid-feedback">{{ errors.price }}</div>{% endif %}
+      <div class="invalid-feedback" id="error-price"></div>
     </div>
 
     <!-- Current Stock -->
     <div class="col-md-6">
       <label for="currentStock" class="form-label">Current Stock</label>
-      <input type="number" name="currentStock" id="currentStock" min="0" class="form-control {% if errors.currentStock %}is-invalid{% endif %}" value="{{ form.currentStock.value|default_if_none:'' }}">
+      <input type="number" name="currentStock" id="currentStock" min="0" class="form-control {% if errors.currentStock %}is-invalid{% endif %}" value="{{ form.currentStock.value|default_if_none:0 }}">
       {% if errors.currentStock %}<div class="invalid-feedback">{{ errors.currentStock }}</div>{% endif %}
+      <div class="invalid-feedback" id="error-currentStock"></div>
     </div>
 
     <!-- Min Stock -->
     <div class="col-md-6">
       <label for="minStock" class="form-label">Minimum Stock *</label>
-      <input type="number" name="minStock" id="minStock" min="0" class="form-control {% if errors.minStock %}is-invalid{% endif %}" value="{{ form.minStock.value|default_if_none:'' }}">
+      <input type="number" name="minStock" id="minStock" min="0" class="form-control {% if errors.minStock %}is-invalid{% endif %}" value="{{ form.minStock.value|default_if_none:'' }}" required>
       {% if errors.minStock %}<div class="invalid-feedback">{{ errors.minStock }}</div>{% endif %}
+      <div class="invalid-feedback" id="error-minStock"></div>
     </div>
 
     <!-- Max Stock -->
     <div class="col-md-6">
       <label for="maxStock" class="form-label">Maximum Stock *</label>
-      <input type="number" name="maxStock" id="maxStock" min="1" class="form-control {% if errors.maxStock %}is-invalid{% endif %}" value="{{ form.maxStock.value|default_if_none:'' }}">
+      <input type="number" name="maxStock" id="maxStock" min="1" class="form-control {% if errors.maxStock %}is-invalid{% endif %}" value="{{ form.maxStock.value|default_if_none:'' }}" required>
       {% if errors.maxStock %}<div class="invalid-feedback">{{ errors.maxStock }}</div>{% endif %}
+      <div class="invalid-feedback" id="error-maxStock"></div>
     </div>
   </div>
 
@@ -64,6 +75,7 @@
   <div class="mt-4">
     <label for="description" class="form-label">Description (Optional)</label>
     <textarea name="description" id="description" rows="3" class="form-control">{{ form.description.value|default_if_none:'' }}</textarea>
+    <div class="invalid-feedback" id="error-description"></div>
   </div>
 
   <!-- Stock Level Preview -->
@@ -76,15 +88,116 @@
         <span>Min: {{ min }}</span>
         <span>Max: {{ max }}</span>
       </div>
-      <!--  -->
     </div>
     {% endwith %}
   {% endif %}
 
   <!-- Submit Button -->
   <div class="mt-4">
-    <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+    <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" id="submit-btn">
       <i class="bi bi-plus-circle"></i> Add Product to Inventory
+    </button>
+    <button type="button" class="btn btn-primary w-100 d-none" id="loading-btn" disabled>
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      Adding Product...
     </button>
   </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('add-product-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const loadingBtn = document.getElementById('loading-btn');
+    const messagesDiv = document.getElementById('form-messages');
+    const successDiv = document.getElementById('form-success');
+    
+    // Function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Function to display errors
+    function displayErrors(errors) {
+        // Clear previous errors
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        document.querySelectorAll('.form-control').forEach(el => el.classList.remove('is-invalid'));
+        
+        // Display new errors
+        for (const [field, messages] of Object.entries(errors)) {
+            const errorDiv = document.getElementById(`error-${field}`);
+            const input = document.getElementById(field);
+            if (errorDiv && input) {
+                errorDiv.textContent = Array.isArray(messages) ? messages[0] : messages;
+                input.classList.add('is-invalid');
+            }
+        }
+    }
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        submitBtn.classList.add('d-none');
+        loadingBtn.classList.remove('d-none');
+        messagesDiv.classList.add('d-none');
+        successDiv.classList.add('d-none');
+        
+        // Create FormData
+        const formData = new FormData(form);
+        
+        // Add CSRF token to headers
+        const csrftoken = getCookie('csrftoken');
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                successDiv.textContent = 'Product added successfully!';
+                successDiv.classList.remove('d-none');
+                form.reset();
+                
+                // Optional: Redirect after success
+                setTimeout(() => {
+                    window.location.href = "{% url 'product_list' %}";
+                }, 1500);
+            } else {
+                if (data.errors) {
+                    displayErrors(data.errors);
+                    messagesDiv.textContent = 'Please correct the errors below.';
+                } else {
+                    messagesDiv.textContent = data.error || 'An error occurred. Please try again.';
+                }
+                messagesDiv.classList.remove('d-none');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            messagesDiv.textContent = 'Network error. Please check your connection and try again.';
+            messagesDiv.classList.remove('d-none');
+        })
+        .finally(() => {
+            submitBtn.classList.remove('d-none');
+            loadingBtn.classList.add('d-none');
+        });
+    });
+});
+</script>

@@ -1,28 +1,69 @@
 from django import forms
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.forms import UserCreationForm
-from .models import Product, ProductConsumption
+from .models import Product, ProductConsumption, CustomUser
 import re
 
-User = get_user_model()
-
 class RegisterForm(forms.ModelForm):
-    password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
-    password2 = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter username'
+        })
+    )
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter first name'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter last name'
+        })
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter email address'
+        })
+    )
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Create a strong password'
+        }),
+        label="Password"
+    )
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm your password'
+        }),
+        label="Confirm Password"
+    )
 
     class Meta:
-        model = User
-        fields = ['username', 'email']
+        model = CustomUser
+        fields = ['username', 'email', 'first_name', 'last_name']
 
     def clean_username(self):
         username = self.cleaned_data['username']
-        if User.objects.filter(username=username).exists():
+        if CustomUser.objects.filter(username=username).exists():
             raise forms.ValidationError("Username already exists.")
         return username
 
     def clean_email(self):
         email = self.cleaned_data['email']
-        if User.objects.filter(email=email).exists():
+        if CustomUser.objects.filter(email=email).exists():
             raise forms.ValidationError("Email already exists.")
         return email
 
@@ -51,6 +92,8 @@ class RegisterForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        user.first_name = self.cleaned_data["first_name"]
+        user.last_name = self.cleaned_data["last_name"]
         if commit:
             user.save()
         return user
@@ -65,26 +108,29 @@ class LoginForm(forms.Form):
         email = cleaned_data.get('email')
         password = cleaned_data.get('password')
 
-        user = authenticate(username=email, password=password)
-        if not user:
+        try:
+            user = CustomUser.objects.get(email=email)
+            user = authenticate(username=user.username, password=password)
+            if not user:
+                raise forms.ValidationError("Invalid credentials.")
+            if not user.is_active:
+                raise forms.ValidationError("Account not yet approved by admin.")
+            cleaned_data['user'] = user
+        except CustomUser.DoesNotExist:
             raise forms.ValidationError("Invalid credentials.")
-        if not user.is_active:
-            raise forms.ValidationError("Account not yet approved by admin.")
-        cleaned_data['user'] = user
         return cleaned_data
 
 
 
 class UserDisplayForm(forms.ModelForm):
     class Meta:
-        model = User
-        fields = ['email', 'first_name', 'last_name', 'is_active', 'approved']
+        model = CustomUser
+        fields = ['email', 'first_name', 'last_name', 'is_active']
         widgets = {
             'email': forms.TextInput(attrs={'readonly': 'readonly'}),
             'first_name': forms.TextInput(attrs={'readonly': 'readonly'}),
             'last_name': forms.TextInput(attrs={'readonly': 'readonly'}),
             'is_active': forms.CheckboxInput(attrs={'disabled': True}),
-            'approved': forms.CheckboxInput(),
         }
 class ProductForm(forms.ModelForm):
     class Meta:

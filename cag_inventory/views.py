@@ -50,13 +50,18 @@ def register_view(request):
 def login_view(request):
     form = LoginForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        username = form.cleaned_data['username']
+        email = form.cleaned_data['email']
         password = form.cleaned_data['password']
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            return redirect('index') 
-        else:
+        
+        try:
+            user_obj = CustomUser.objects.get(email=email)
+            user = authenticate(request, username=user_obj.username, password=password)
+            if user:
+                login(request, user)
+                return redirect('index') 
+            else:
+                form.add_error(None, "Invalid credentials")
+        except CustomUser.DoesNotExist:
             form.add_error(None, "Invalid credentials")
     return render(request, 'login.html', {'form': form})
 
@@ -116,12 +121,20 @@ def add_product(request):
     errors = {}
 
     if request.method == "POST":
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
         form = ProductForm(request.POST)
         if form.is_valid():
             product = form.save()
-            return JsonResponse({'success': True, 'product_id': product.id})
-        errors = form.errors
-        return JsonResponse({'success': False, 'error': str(errors)})
+            if is_ajax:
+                return JsonResponse({'success': True, 'product_id': product.id})
+            else:
+                return redirect('product_list')
+        else:
+            errors = form.errors
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': errors})
     else:
         form = ProductForm()
 
