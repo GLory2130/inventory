@@ -139,34 +139,7 @@ document.querySelectorAll('.stock-update-form').forEach(function(form) {
   });
 });
 
-document.getElementById('add-product-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const form = e.target;
-  const url = form.action;
-  const formData = new FormData(form);
-
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': form.querySelector('input[name="csrfmiddlewaretoken"]').value,
-      'Accept': 'application/json',
-    },
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      // Optionally clear the form
-      form.reset();
-      // Optionally show a success message
-      alert('Product added!');
-      // Optionally update the product list (reload or use AJAX to fetch and update)
-      location.reload(); // simplest way to update the dashboard
-    } else {
-      alert(data.error || 'Failed to add product');
-    }
-  });
-});
+// Add product form handler is now in add_product_form.html
 </script>
 </body>
 {% endblock %}

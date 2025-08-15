@@ -18,28 +18,50 @@
             {% endif %}
           </div>
           <div class="card-body">
-            <ul class="list-unstyled small mb-3">
-              <li><strong>Price:</strong> <span class="text-success">Tzs {{ product.price|floatformat:2 }}</span></li>
-              <li><strong>Supplier:</strong> {{ product.supplier }}</li>
-              <li><strong>Min Stock:</strong> {{ product.minStock }}</li>
-              <li><strong>Current Stock:</strong> <span class="text-primary"> {{ product.currentStock|floatformat:2 }}</span></li>
-            </ul>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><strong>Price:</strong></span>
+                <span class="text-success fw-bold">Tzs {{ product.price|floatformat:2 }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><strong>Supplier:</strong></span>
+                <span>{{ product.supplier }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><strong>Min Stock:</strong></span>
+                <span>{{ product.minStock }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><strong>Current Stock:</strong></span>
+                <span class="text-primary fw-bold">{{ product.currentStock|floatformat:2 }}</span>
+              </div>
+            </div>
             {% if product.description %}
-              <p class="text-muted small fst-italic">{{ product.description }}</p>
+              <p class="text-muted small fst-italic mb-3">{{ product.description }}</p>
             {% endif %}
 
             <!-- Plus/Minus Stock Update Form -->
-            <form method="post" action="{% url 'update-stock' product.id %}" class="stock-update-form" data-product-id="{{ product.id }}">
-              {% csrf_token %}
-              <input type="number" name="amount" min="1" class="form-control form-control-sm" placeholder="Amount">
-              <button type="submit" name="type" value="add" class="btn btn-sm btn-success">
-                <i class="bi bi-plus"></i>
-              </button>
-              <button type="submit" name="type" value="remove" class="btn btn-sm btn-outline-danger" {% if product.currentStock == 0 %}disabled{% endif %}>
-                <i class="bi bi-dash"></i>
-              </button>
-            </form>
-            <span class="current-stock" id="current-stock-{{ product.id }}">{{ product.currentStock }}</span>
+            <div class="d-flex gap-2 align-items-center">
+              <form method="post" action="{% url 'update-stock' product.id %}" class="stock-update-form d-inline" data-product-id="{{ product.id }}" data-min-stock="{{ product.minStock }}">
+                {% csrf_token %}
+                <input type="hidden" name="amount" value="1">
+                <input type="hidden" name="type" value="remove">
+                <button type="submit" class="btn btn-sm btn-outline-danger" {% if product.currentStock == 0 %}disabled{% endif %}>
+                  <i class="bi bi-dash"></i>
+                </button>
+              </form>
+              
+              <span class="current-stock fw-bold text-primary" id="current-stock-{{ product.id }}">{{ product.currentStock }}</span>
+              
+              <form method="post" action="{% url 'update-stock' product.id %}" class="stock-update-form d-inline" data-product-id="{{ product.id }}" data-min-stock="{{ product.minStock }}">
+                {% csrf_token %}
+                <input type="hidden" name="amount" value="1">
+                <input type="hidden" name="type" value="add">
+                <button type="submit" class="btn btn-sm btn-success">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -52,3 +74,143 @@
     </div>
   {% endif %}
 </div>
+
+<!-- Pagination Controls -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Product pagination" class="mt-4">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1{% if search_term %}&search={{ search_term }}{% endif %}{% if selected_category != 'all' %}&category={{ selected_category }}{% endif %}" aria-label="First">
+          <span aria-hidden="true">&laquo;&laquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_term %}&search={{ search_term }}{% endif %}{% if selected_category != 'all' %}&category={{ selected_category }}{% endif %}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <li class="page-item active">
+          <span class="page-link">{{ num }}</span>
+        </li>
+      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ num }}{% if search_term %}&search={{ search_term }}{% endif %}{% if selected_category != 'all' %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_term %}&search={{ search_term }}{% endif %}{% if selected_category != 'all' %}&category={{ selected_category }}{% endif %}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_term %}&search={{ search_term }}{% endif %}{% if selected_category != 'all' %}&category={{ selected_category }}{% endif %}" aria-label="Last">
+          <span aria-hidden="true">&raquo;&raquo;</span>
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+
+<!-- Page Info -->
+<div class="text-center mt-3">
+  <small class="text-muted">
+    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} products
+  </small>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle stock update forms
+    document.querySelectorAll('.stock-update-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const productId = form.dataset.productId;
+            const minStock = parseInt(form.dataset.minStock);
+            const currentStockSpan = document.getElementById(`current-stock-${productId}`);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': form.querySelector('input[name="csrfmiddlewaretoken"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the current stock span below the form
+                    if (currentStockSpan) {
+                        currentStockSpan.textContent = data.currentStock;
+                    }
+                    
+                    // Update the current stock display in the card body
+                    const cardBody = form.closest('.card-body');
+                    const stockDisplay = cardBody.querySelector('.text-primary.fw-bold');
+                    if (stockDisplay) {
+                        stockDisplay.textContent = data.currentStock;
+                    }
+                    
+                    // Update stock status badge in real-time
+                    const card = form.closest('.card');
+                    const cardHeader = card.querySelector('.card-header');
+                    const statusBadge = cardHeader.querySelector('.badge.bg-danger, .badge.bg-warning, .badge.bg-success');
+                    
+                    // Update badge based on current stock level
+                    if (statusBadge) {
+                        // Remove all status classes
+                        statusBadge.classList.remove('bg-danger', 'bg-warning', 'bg-success', 'text-dark');
+                        
+                        // Update badge content and classes based on stock level
+                        if (data.currentStock == 0) {
+                            statusBadge.classList.add('bg-danger');
+                            statusBadge.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Out of Stock';
+                        } else if (data.currentStock <= minStock) {
+                            statusBadge.classList.add('bg-warning', 'text-dark');
+                            statusBadge.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Low Stock';
+                        } else {
+                            statusBadge.classList.add('bg-success');
+                            statusBadge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> In Stock';
+                        }
+                    }
+                    
+                    // Show success feedback
+                    card.style.transform = 'scale(1.02)';
+                    card.style.transition = 'transform 0.2s ease';
+                    setTimeout(() => {
+                        card.style.transform = 'scale(1)';
+                    }, 200);
+                    
+                    // Update remove button state if stock is 0
+                    const removeButton = form.querySelector('button[value="remove"]');
+                    if (removeButton) {
+                        if (data.currentStock == 0) {
+                            removeButton.disabled = true;
+                        } else {
+                            removeButton.disabled = false;
+                        }
+                    }
+                    
+                } else {
+                    alert(data.error || 'Failed to update stock');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error. Please try again.');
+            });
+        });
+    });
+});
+</script>

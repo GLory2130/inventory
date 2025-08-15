@@ -7,12 +7,13 @@ from django.utils import timezone
 from datetime import timedelta
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 
 def base(request):
     return render(request, 'base.html')
 
 def index(request):
-    products = Product.objects.all()
+    products = Product.objects.all().order_by('-id')  # Order by newest first
     categories = ["all"] + list(Product.objects.values_list('category', flat=True).distinct())
     selected_category = request.GET.get('category', 'all')
     search_term = request.GET.get('search', '')
@@ -24,9 +25,15 @@ def index(request):
         category=selected_category
     )
 
+    # Add pagination - 9 products per page
+    paginator = Paginator(filtered_products, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'products': products,
-        'filtered_products': filtered_products,
+        'filtered_products': page_obj,  # Use paginated products
+        'page_obj': page_obj,  # Add page object for pagination controls
         'categories': categories,
         'selected_category': selected_category,
         'search_term': search_term,
@@ -112,6 +119,11 @@ def stock_update(request, pk):
             product.currentStock += amount
         elif action == "remove" and product.currentStock >= amount:
             product.currentStock -= amount
+            # Track consumption when stock is reduced
+            ProductConsumption.objects.create(
+                product=product,
+                quantity=amount
+            )
         product.save()
         return JsonResponse({'success': True, 'currentStock': product.currentStock})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
@@ -303,3 +315,41 @@ def update_product(request):
         return redirect('index')
     # For GET, render the form with products
     return render(request, 'update_product_form.html', {'products': products})
+
+def real_time_analytics(request):
+    """API endpoint for real-time consumption analytics"""
+    from django.db.models import Sum
+    from datetime import datetime, timedelta
+    
+    period = request.GET.get('period', 'daily')
+    
+    # Calculate date ranges
+    now = timezone.now()
+    if period == 'daily':
+        start_date = now - timedelta(days=7)  # Last 7 days
+        date_format = '%Y-%m-%d'
+    elif period == 'weekly':
+        start_date = now - timedelta(weeks=8)  # Last 8 weeks
+        date_format = '%Y-W%U'
+    else:  # monthly
+        start_date = now - timedelta(days=365)  # Last 12 months
+        date_format = '%Y-%m'
+    
+    # Get consumption data
+    consumptions = ProductConsumption.objects.filter(
+        consumed_at__gte=start_date
+    ).values(
+        'product__name'
+    ).annotate(
+        total_consumed=Sum('quantity')
+    ).order_by('-total_consumed')[:10]  # Top 10 most consumed
+    
+    # Format data for chart
+    labels = [item['product__name'] for item in consumptions]
+    data = [item['total_consumed'] for item in consumptions]
+    
+    return JsonResponse({
+        'labels': labels,
+        'data': data,
+        'period': period
+    })

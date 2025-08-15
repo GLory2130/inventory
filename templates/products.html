@@ -52,20 +52,5 @@
 
       </div>
 
-      <!-- Filtered Product Table -->
-      <div class="mt-5">
-        {% if products %}
-          <ul>
-            {% for product in products %}
-              <li>{{ product.name }} ({{ product.category }})</li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>No products found.</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
+      
 {% endblock %}
-}
