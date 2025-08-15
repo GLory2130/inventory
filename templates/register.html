@@ -126,11 +126,11 @@
 
       <!-- Social Buttons -->
       <div class="d-grid gap-2">
-        <button type="button" class="btn btn-outline-secondary">
-          <i class="bi bi-google me-2"></i> Google
-        </button>
-        <button type="button" class="btn btn-outline-secondary">
-          <i class="bi bi-facebook me-2"></i> Facebook
+        <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-outline-danger">
+          <i class="bi bi-google me-2"></i> Continue with Google
+        </a>
+        <button type="button" class="btn btn-outline-secondary" disabled>
+          <i class="bi bi-facebook me-2"></i> Facebook (Coming Soon)
         </button>
       </div>
     </div>
