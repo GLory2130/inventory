@@ -22,30 +22,15 @@
         <option value="monthly">Monthly (Last 12 months)</option>
       </select>
     </div>
-    <div class="card-body">
+    <div class="card-body text-white">
       <canvas id="realTimeConsumptionChart" width="400" height="200"></canvas>
-      <div class="text-center mt-3">
+      <div class="text-center mt-3 text-white">
         <small class="text-muted" id="chartInfo">Updates automatically when products are consumed</small>
       </div>
     </div>
   </div>
 
-  <!-- Historical Most Consumed Products Chart -->
-  <div class="card mb-5">
-    <div class="card-header bg-secondary text-white">Historical Most Consumed Products</div>
-    <div class="card-body">
-      <form method="get" class="mb-3">
-        <select name="period" class="form-select w-auto d-inline-block">
-          <option value="daily" {% if period == 'daily' %}selected{% endif %}>Daily</option>
-          <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>Weekly</option>
-          <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>Monthly</option>
-        </select>
-        <button type="submit" class="btn btn-primary">Show</button>
-      </form>
-      <canvas id="mostConsumedChart"></canvas>
-    </div>
-  </div>
-</div>
+ 
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -66,7 +51,29 @@
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false } }
+      plugins: { 
+        legend: { 
+          display: false 
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: 'white'
+          },
+          grid: {
+            color: 'rgba(255, 255, 255, 0.2)'
+          }
+        },
+        y: {
+          ticks: {
+            color: 'white'
+          },
+          grid: {
+            color: 'rgba(255, 255, 255, 0.2)'
+          }
+        }
+      }
     }
   });
 
@@ -121,13 +128,27 @@
             beginAtZero: true,
             title: {
               display: true,
-              text: 'Quantity Consumed'
+              text: 'Quantity Consumed',
+              color: 'white'
+            },
+            ticks: {
+              color: 'white'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.2)'
             }
           },
           x: {
             title: {
               display: true,
-              text: 'Products'
+              text: 'Products',
+              color: 'white'
+            },
+            ticks: {
+              color: 'white'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.2)'
             }
           }
         }

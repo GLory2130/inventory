@@ -1,11 +1,97 @@
 body {
-  background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), url('../images/bg1.jpeg');
+  background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), url('../images/bg1.jpeg');
   background-size: cover;
-  background-repeat:no-repeat;
+  background-repeat: no-repeat;
   background-position: center;
-
+  background-attachment: fixed;
 }
 
 .container{
     background-color: transparent !important;
+}
+
+/* Make text white for better readability on background image */
+body {
+    color: white !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: white !important;
+}
+
+p, .text-muted {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.card-title, .card-text {
+    color: white !important;
+}
+
+/* Keep navbar readable */
+.navbar {
+    background-color: rgba(248, 249, 250, 0.95) !important;
+}
+
+/* Analytics page chart text visibility */
+.card-header {
+    background-color: rgba(13, 110, 253, 0.9) !important;
+    color: white !important;
+}
+
+.card-header.bg-success {
+    background-color: rgba(25, 135, 84, 0.9) !important;
+}
+
+.card-header.bg-secondary {
+    background-color: rgba(108, 117, 125, 0.9) !important;
+}
+
+/* Chart canvas container styling for better text visibility */
+canvas {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px;
+}
+
+/* Ensure all text in analytics is white */
+#chartInfo {
+    color: white !important;
+}
+
+.text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Form elements on analytics page */
+.form-select {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    color: #333 !important;
+}
+
+/* Default buttons keep blue styling */
+.btn-primary {
+    background-color: rgba(13, 110, 253, 0.9) !important;
+    border-color: rgba(13, 110, 253, 0.9) !important;
+    color: white !important;
+}
+
+/* Home page CTA buttons - white background */
+.btn-light {
+    background-color: white !important;
+    border-color: white !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+.btn-light:hover {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.9) !important;
+    color: #333 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
