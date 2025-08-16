@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from .forms import ProductForm, RegisterForm, LoginForm
 from .models import Product, CustomUser, ProductConsumption
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, F
 from django.utils import timezone
 from datetime import timedelta
 from django.http import JsonResponse
@@ -39,7 +39,7 @@ def index(request):
         'search_term': search_term,
         'total_products': products.count(),
         'out_of_stock_count': products.filter(currentStock=0).count(),
-        'low_stock_count': products.filter(currentStock__lte=1).count(),  # adjust as needed
+        'low_stock_count': products.filter(currentStock__gt=0, currentStock__lte=F('minStock')).count(),
         'total_value': sum([p.currentStock * p.price for p in products]),
     }
     return render(request, 'index.html', context)
@@ -326,25 +326,20 @@ def real_time_analytics(request):
     # Calculate date ranges
     now = timezone.now()
     if period == 'daily':
-        start_date = now - timedelta(days=7)  # Last 7 days
-        date_format = '%Y-%m-%d'
+        start_date = now - timedelta(days=7)  
     elif period == 'weekly':
-        start_date = now - timedelta(weeks=8)  # Last 8 weeks
-        date_format = '%Y-W%U'
+        start_date = now - timedelta(weeks=8)  
     else:  # monthly
-        start_date = now - timedelta(days=365)  # Last 12 months
-        date_format = '%Y-%m'
+        start_date = now - timedelta(days=365)  
     
-    # Get consumption data
     consumptions = ProductConsumption.objects.filter(
         consumed_at__gte=start_date
     ).values(
         'product__name'
     ).annotate(
         total_consumed=Sum('quantity')
-    ).order_by('-total_consumed')[:10]  # Top 10 most consumed
+    ).order_by('-total_consumed')[:10]  
     
-    # Format data for chart
     labels = [item['product__name'] for item in consumptions]
     data = [item['total_consumed'] for item in consumptions]
     
@@ -353,3 +348,17 @@ def real_time_analytics(request):
         'data': data,
         'period': period
     })
+
+def real_time_stats(request):
+    """API endpoint for real-time inventory statistics"""
+    from django.db.models import F
+    products = Product.objects.all()
+    
+    stats = {
+        'total_products': products.count(),
+        'out_of_stock_count': products.filter(currentStock=0).count(),
+        'low_stock_count': products.filter(currentStock__gt=0, currentStock__lte=F('minimumStock')).count(),
+        'total_value': sum([p.currentStock * p.price for p in products]),
+    }
+    
+    return JsonResponse(stats)

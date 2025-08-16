@@ -18,7 +18,7 @@
       <div class="card shadow-sm">
         <div class="card-body text-center">
           <h6 class="text-muted">Total Products</h6>
-          <h3 class="fw-bold">{{ total_products }}</h3>
+          <h3 class="fw-bold" id="total-products-count">{{ total_products }}</h3>
           <small class="text-muted">Active inventory items</small>
         </div>
       </div>
@@ -27,7 +27,7 @@
       <div class="card shadow-sm">
         <div class="card-body text-center">
           <h6 class="text-muted">Out of Stock</h6>
-          <h3 class="fw-bold text-danger">{{ out_of_stock_count }}</h3>
+          <h3 class="fw-bold text-danger" id="out-of-stock-count">{{ out_of_stock_count }}</h3>
           <small class="text-muted">Items need restocking</small>
         </div>
       </div>
@@ -36,7 +36,7 @@
       <div class="card shadow-sm">
         <div class="card-body text-center">
           <h6 class="text-muted">Low Stock</h6>
-          <h3 class="fw-bold text-warning">{{ low_stock_count }}</h3>
+          <h3 class="fw-bold text-warning" id="low-stock-count">{{ low_stock_count }}</h3>
           <small class="text-muted">Items below minimum</small>
         </div>
       </div>
@@ -45,7 +45,7 @@
       <div class="card shadow-sm">
         <div class="card-body text-center">
           <h6 class="text-muted">Total Value</h6>
-          <h3 class="fw-bold text-success">Tzs {{ total_value|floatformat:2 }}</h3>
+          <h3 class="fw-bold text-success" id="total-value">Tzs {{ total_value|floatformat:2 }}</h3>
           <small class="text-muted">Current inventory value</small>
         </div>
       </div>
@@ -130,13 +130,85 @@ document.querySelectorAll('.stock-update-form').forEach(function(form) {
     })
     .then(response => response.json())
     .then(data => {
-      if (data.success) {
-        document.getElementById('current-stock-' + productId).textContent = data.currentStock;
+      // Update stock count in the UI
+      document.querySelector(`[data-product-id="${productId}"] .stock-count`).textContent = data.currentStock;
+      
+      // Update stock status badge
+      const badge = document.querySelector(`[data-product-id="${productId}"] .stock-status-badge`);
+      const minStock = parseInt(form.getAttribute('data-min-stock')) || 5;
+      
+      if (data.currentStock === 0) {
+        badge.className = 'badge bg-danger stock-status-badge';
+        badge.innerHTML = '<i class="bi bi-x-circle me-1"></i>Out of Stock';
+      } else if (data.currentStock <= minStock) {
+        badge.className = 'badge bg-warning stock-status-badge';
+        badge.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Low Stock';
       } else {
-        alert(data.error || 'Update failed');
+        badge.className = 'badge bg-success stock-status-badge';
+        badge.innerHTML = '<i class="bi bi-check-circle me-1"></i>In Stock';
       }
+      
+      // Disable minus button if stock is 0
+      const minusBtn = document.querySelector(`[data-product-id="${productId}"] button[name="type"][value="remove"]`);
+      if (minusBtn) {
+        minusBtn.disabled = data.currentStock === 0;
+      }
+      
+      // Update real-time statistics after stock change
+      updateStatsAfterStockChange();
+    })
+    .catch(error => {
+      console.error('Error updating stock:', error);
     });
   });
+});
+
+// Real-time statistics update function
+function updateRealTimeStats() {
+  fetch('/api/real-time-stats/')
+    .then(response => response.json())
+    .then(data => {
+      // Update Out of Stock count
+      const outOfStockElement = document.getElementById('out-of-stock-count');
+      if (outOfStockElement) {
+        outOfStockElement.textContent = data.out_of_stock_count;
+      }
+      
+      // Update Low Stock count
+      const lowStockElement = document.getElementById('low-stock-count');
+      if (lowStockElement) {
+        lowStockElement.textContent = data.low_stock_count;
+      }
+      
+      // Update Total Products count
+      const totalProductsElement = document.getElementById('total-products-count');
+      if (totalProductsElement) {
+        totalProductsElement.textContent = data.total_products;
+      }
+      
+      // Update Total Value
+      const totalValueElement = document.getElementById('total-value');
+      if (totalValueElement) {
+        totalValueElement.textContent = 'Tzs ' + data.total_value.toFixed(2);
+      }
+    })
+    .catch(error => {
+      console.error('Error updating real-time stats:', error);
+    });
+}
+
+// Update stats when stock is changed
+function updateStatsAfterStockChange() {
+  updateRealTimeStats();
+}
+
+// Initialize real-time stats updates
+document.addEventListener('DOMContentLoaded', function() {
+  // Update stats every 30 seconds
+  setInterval(updateRealTimeStats, 30000);
+  
+  // Update stats immediately when page loads
+  updateRealTimeStats();
 });
 
 // Add product form handler is now in add_product_form.html
