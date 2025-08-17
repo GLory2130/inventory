@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from django.contrib.auth import authenticate, login
 from .forms import ProductForm, RegisterForm, LoginForm
 from .models import Product, CustomUser, ProductConsumption
 from django.db.models import Sum, Count, F
@@ -9,9 +9,15 @@ from datetime import timedelta
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
+
 
 def base(request):
     return render(request, 'base.html')
+
 
 @login_required
 def index(request):
@@ -53,10 +59,17 @@ def home(request):
 def register_view(request):
     form = RegisterForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        form.save()
+        # Create user but set as inactive (requires admin approval)
+        user = form.save(commit=False)
+        user.is_active = False  # User cannot login until admin approves
+        user.save()
+        
+        # Add success message indicating approval is needed
+        messages.success(request, 'Registration successful! Your account is pending admin approval. You will be able to login once approved.')
         return redirect('login')
     return render(request, 'register.html', {'form': form})
 
+@csrf_protect
 def login_view(request):
     form = LoginForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -67,16 +80,24 @@ def login_view(request):
             user_obj = CustomUser.objects.get(email=email)
             user = authenticate(request, username=user_obj.username, password=password)
             if user:
-                login(request, user)
-                return redirect('index') 
+                # Check if user account is active (approved by admin)
+                if not user.is_active:
+                    form.add_error(None, "Your account is pending admin approval. Please wait for approval before logging in.")
+                else:
+                    login(request, user)
+                    # Redirect admin users to Django admin site
+                    if user.is_staff or user.is_superuser:
+                        return redirect(reverse('admin:index'))
+                    else:
+                        return redirect('index')
             else:
                 form.add_error(None, "Invalid credentials")
         except CustomUser.DoesNotExist:
             form.add_error(None, "Invalid credentials")
     return render(request, 'login.html', {'form': form})
 
-def logout_view(request):
-    logout(request)
+def logout(request):
+    auth_logout(request)  # This clears the session & logs the user out
     return redirect('home')
 
 def product_list(request):
@@ -364,7 +385,7 @@ def real_time_stats(request):
     stats = {
         'total_products': products.count(),
         'out_of_stock_count': products.filter(currentStock=0).count(),
-        'low_stock_count': products.filter(currentStock__gt=0, currentStock__lte=F('minimumStock')).count(),
+        'low_stock_count': products.filter(currentStock__gt=0, currentStock__lte=F('minStock')).count(),
         'total_value': sum([p.currentStock * p.price for p in products]),
     }
     
