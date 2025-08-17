@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from .forms import ProductForm, RegisterForm, LoginForm
 from .models import Product, CustomUser, ProductConsumption
 from django.db.models import Sum, Count, F
@@ -12,6 +13,7 @@ from django.core.paginator import Paginator
 def base(request):
     return render(request, 'base.html')
 
+@login_required
 def index(request):
     products = Product.objects.all().order_by('-id')  # Order by newest first
     categories = ["all"] + list(Product.objects.values_list('category', flat=True).distinct())
@@ -44,6 +46,7 @@ def index(request):
     }
     return render(request, 'index.html', context)
 
+@login_required
 def home(request):
     return render(request, 'home.html')
 
@@ -71,6 +74,10 @@ def login_view(request):
         except CustomUser.DoesNotExist:
             form.add_error(None, "Invalid credentials")
     return render(request, 'login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
 
 def product_list(request):
     products = Product.objects.all()
