@@ -5,7 +5,11 @@ __pycache__/
 # Django
 db.sqlite3
 *.log
+<<<<<<< HEAD
 *.env
+=======
+.env
+>>>>>>> cd23fe7f3847f82b24d6c239015efc27326db9de
 media/
 staticfiles/
 
