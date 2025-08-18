@@ -122,11 +122,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 
-<<<<<<< HEAD
 
-
-=======
->>>>>>> cd23fe7f3847f82b24d6c239015efc27326db9de
 # Authentication URLs
 LOGIN_URL = '/auth/login/google-oauth2/'
 LOGIN_URL = '/login/'
