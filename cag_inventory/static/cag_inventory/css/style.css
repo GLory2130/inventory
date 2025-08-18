@@ -38,6 +38,23 @@ p, .text-muted {
     background-color: rgba(248, 249, 250, 0.95) !important;
 }
 
+/* Fixed navbar adjustments */
+body {
+    padding-top: 70px; /* Adjust based on navbar height */
+}
+
+.navbar.fixed-top {
+    z-index: 1030; /* Ensure navbar stays above other content */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive padding adjustment for smaller screens */
+@media (max-width: 991.98px) {
+    body {
+        padding-top: 56px; /* Smaller padding for mobile */
+    }
+}
+
 /* Analytics page chart text visibility */
 .card-header {
     background-color: rgba(13, 110, 253, 0.9) !important;

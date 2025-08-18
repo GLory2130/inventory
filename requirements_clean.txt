@@ -1,4 +1,4 @@
-Django==5.2
+
 djangorestframework==3.16.0
 django-cors-headers==4.7.0
 social-auth-app-django==5.5.1
@@ -14,3 +14,4 @@ asgiref==3.8.1
 sqlparse==0.5.3
 tzdata==2025.2
 Pillow==11.2.1
+django-jazzmin==3.0.1
